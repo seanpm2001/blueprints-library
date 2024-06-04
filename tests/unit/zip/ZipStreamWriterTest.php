@@ -50,7 +50,7 @@ class ZipStreamWriterTest extends TestCase {
         $targetPathInZip = 'file';
 
         // Test the function
-        $zipWriter->writeFileFromPath($sourcePathOnDisk, $targetPathInZip, $should_deflate);
+        $zipWriter->writeFileFromPath($targetPathInZip, $sourcePathOnDisk, $should_deflate);
         $zipWriter->finish();
 
         fclose($fp);
@@ -66,6 +66,37 @@ class ZipStreamWriterTest extends TestCase {
         $fileContent = $zip->getFromName($targetPathInZip);
         $this->assertEquals(file_get_contents($sourcePathOnDisk), $fileContent, "The file content does not match");
         $zip->close();
+    }
+
+    /**
+     * @dataProvider shouldDeflateProvider
+     */
+    public function testWriteFileFromString($should_deflate)
+    {
+        $this->tempZipPath = tempnam($this->tempDir, 'testzip');
+        $fp = fopen($this->tempZipPath, 'wb');
+
+        $zipWriter = new ZipStreamWriter($fp);
+        $sourceContent = 'Hello';
+        $targetPathInZip = 'file';
+
+        // Test the function
+        $zipWriter->writeFileFromString($targetPathInZip, $sourceContent, $should_deflate);
+        $zipWriter->finish();
+
+        fclose($fp);
+
+        // Check that the ZIP file was created and is not empty
+        $this->assertFileExists($this->tempZipPath);
+        $this->assertGreaterThan(0, filesize($this->tempZipPath));
+
+        // Open the ZIP file and verify its contents
+        $zip = new \ZipArchive();
+        $zip->open($this->tempZipPath);
+        $this->assertTrue($zip->locateName($targetPathInZip) !== false, "The file was not found in the ZIP");
+        $fileContent = $zip->getFromName($targetPathInZip);
+        $this->assertEquals($sourceContent, $fileContent, "The file content does not match");
+        $zip->close();        
     }
 
     static public function shouldDeflateProvider() {

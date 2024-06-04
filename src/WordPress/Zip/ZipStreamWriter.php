@@ -36,7 +36,7 @@ class ZipStreamWriter {
 	 * into memory. It reads and compresses the file in chunks, making it suitable for streaming
 	 * large files effectively.
 	 */
-	public function writeFileFromPath($sourcePathOnDisk, $targetPathInZip, $should_deflate = true) {
+	public function writeFileFromPath($targetPathInZip, $sourcePathOnDisk, $should_deflate = true) {
 		$uncompressedSize = 0;
 		$compressedSize = 0;
 		if (!$should_deflate) {
@@ -179,6 +179,36 @@ class ZipStreamWriter {
 		$this->recordFileForCentralDirectory($entry);
 		$this->bytes_written += $entry->size();
 		return true;
+	}
+
+	public function writeFileFromString($targetPathInZip, $data, $should_deflate = true)
+	{
+		if ($should_deflate) {
+			$compressed_data = gzdeflate($data);
+		} else {
+			$compressed_data = $data;
+		}
+	
+		// Create the ZipFileEntry object
+		$entry = new ZipFileEntry(
+			2, // Version needed to extract (minimum)
+			0, // General purpose bit flag
+			$should_deflate ? 8 : 0, // Compression method (8 = deflate, 0 = none)
+			time() >> 16, // File last modification time
+			time() & 0xFFFF, // File last modification date
+			hexdec(hash('crc32b', $data)), // CRC-32
+			strlen($compressed_data), // Uncompressed size
+			strlen($data), // Uncompressed size
+			$targetPathInZip, // File name
+			'', // Extra field
+			$compressed_data  // Buffering bytes into memory
+		);
+
+		// Write the file entry header
+		static::writeFileEntry($this->fp, $entry);
+		$this->recordFileForCentralDirectory($entry);
+		$this->bytes_written += $entry->size();
+		return $entry->size();
 	}
 
 	private function recordFileForCentralDirectory(ZipFileEntry $file_entry) {
