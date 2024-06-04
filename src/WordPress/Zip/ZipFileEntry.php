@@ -66,7 +66,7 @@ class ZipFileEntry {
 		int $compressionMethod,
 		int $lastModifiedTime,
 		int $lastModifiedDate,
-		int $crc,
+		$crc,
 		int $compressedSize,
 		int $uncompressedSize,
 		string $path,
