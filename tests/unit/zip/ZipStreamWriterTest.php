@@ -30,11 +30,11 @@ class ZipStreamWriterTest extends TestCase {
         if (file_exists($this->tempSourceFile)) {
             unlink($this->tempSourceFile);
         }
-        if (is_dir($this->tempDir)) {
-            rmdir($this->tempDir);
-        }
         if (file_exists($this->tempZipPath)) {
             unlink($this->tempZipPath);
+        }
+        if (is_dir($this->tempDir)) {
+            rmdir($this->tempDir);
         }
     }
 
