@@ -4,6 +4,8 @@ namespace WordPress\Zip;
 
 class ZipCentralDirectoryEntry {
 
+	const HEADER_SIZE = 46;
+
 	public $isDirectory;
 	public $firstByteAt;
 	public $versionCreated;
@@ -18,7 +20,6 @@ class ZipCentralDirectoryEntry {
 	public $diskNumber;
 	public $internalAttributes;
 	public $externalAttributes;
-	public $lastByteAt;
 	public $path;
 	public $extra;
 	public $fileComment;
@@ -37,7 +38,6 @@ class ZipCentralDirectoryEntry {
 		int $internalAttributes,
 		int $externalAttributes,
 		int $firstByteAt,
-		int $lastByteAt,
 		string $path,
 		string $extra,
 		string $fileComment
@@ -45,7 +45,6 @@ class ZipCentralDirectoryEntry {
 		$this->fileComment        = $fileComment;
 		$this->extra              = $extra;
 		$this->path               = $path;
-		$this->lastByteAt         = $lastByteAt;
 		$this->externalAttributes = $externalAttributes;
 		$this->internalAttributes = $internalAttributes;
 		$this->diskNumber         = $diskNumber;
@@ -64,5 +63,14 @@ class ZipCentralDirectoryEntry {
 
 	public function isFileEntry() {
 		return false;
+	}
+
+	public function size() {
+		return (
+			self::HEADER_SIZE +
+			strlen($this->path) +
+			strlen($this->extra) +
+			strlen($this->fileComment)
+		);
 	}
 }
