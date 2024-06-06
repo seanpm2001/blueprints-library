@@ -3,6 +3,14 @@
 namespace WordPress\Zip;
 
 class ZipFileEntry {
+
+	/**
+	 * The size of the ZIP file entry header in bytes.
+	 * 
+	 * @var int
+	 */
+	const HEADER_SIZE = 30;
+
 	/**
 	 * @var bool
 	 */
@@ -58,7 +66,7 @@ class ZipFileEntry {
 		int $compressionMethod,
 		int $lastModifiedTime,
 		int $lastModifiedDate,
-		int $crc,
+		$crc,
 		int $compressedSize,
 		int $uncompressedSize,
 		string $path,
@@ -81,5 +89,14 @@ class ZipFileEntry {
 
 	public function isFileEntry() {
 		return true;
+	}
+
+	public function size() {
+		return (
+			self::HEADER_SIZE + 
+			strlen($this->path) + 
+			strlen($this->extra) + 
+			$this->compressedSize
+		);
 	}
 }
