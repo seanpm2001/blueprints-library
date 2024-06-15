@@ -192,7 +192,7 @@ class Client {
 
 		foreach ( $streams as $k => $stream ) {
 			$request                            = $enqueued[ $k ];
-			$total                              = $response_headers[ $k ]['headers']['content-length'];
+			$total                              = $response_headers[ $k ]['headers']['content-length'] ?? null;
 			$this->requests[ $request ]->state  = RequestInfo::STATE_STREAMING;
 			$this->requests[ $request ]->stream = stream_monitor_progress(
 				$stream,
