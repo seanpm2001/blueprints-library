@@ -7,6 +7,7 @@ class RequestInfo {
 	const STATE_STREAMING = 'STATE_STREAMING';
 	const STATE_FINISHED  = 'STATE_FINISHED';
 	public $state         = self::STATE_ENQUEUED;
+	public $headers       = null;
 	public $stream;
 	public $buffer = '';
 

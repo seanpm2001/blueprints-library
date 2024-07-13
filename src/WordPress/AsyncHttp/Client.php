@@ -4,9 +4,9 @@ namespace WordPress\AsyncHttp;
 
 use Exception;
 use WordPress\Util\Map;
-use function WordPress\Streams\stream_monitor_progress;
-use function WordPress\Streams\streams_http_response_await_bytes;
-use function WordPress\Streams\streams_send_http_requests;
+use function WordPress\AsyncHttp\stream_monitor_progress;
+use function WordPress\AsyncHttp\streams_http_response_await_bytes;
+use function WordPress\AsyncHttp\streams_send_http_requests;
 
 /**
  * An asynchronous HTTP client library designed for WordPress. Main features:
@@ -191,10 +191,10 @@ class Client {
 		list( $streams, $response_headers ) = streams_send_http_requests( $enqueued );
 
 		foreach ( $streams as $k => $stream ) {
-			$request                            = $enqueued[ $k ];
-			$total                              = $response_headers[ $k ]['headers']['content-length'] ?? null;
-			$this->requests[ $request ]->state  = RequestInfo::STATE_STREAMING;
-			$this->requests[ $request ]->stream = stream_monitor_progress(
+			$request                             = $enqueued[ $k ];
+			$total                               = $response_headers[ $k ]['headers']['content-length'] ?? null;
+			$this->requests[ $request ]->state   = RequestInfo::STATE_STREAMING;
+			$this->requests[ $request ]->stream  = stream_monitor_progress(
 				$stream,
 				function ( $downloaded ) use ( $request, $total ) {
 					$onProgress = $this->onProgress;
