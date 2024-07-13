@@ -6,7 +6,6 @@ use function WordPress\AsyncHttp\streams_http_response_await_bytes;
 use function WordPress\AsyncHttp\streams_send_http_requests;
 
 require __DIR__ . '/vendor/autoload.php';
-require_once __DIR__ . '/src/WordPress/AsyncHttp/ChunkedEncodingFilter.php';
 require_once __DIR__ . '/src/WordPress/Streams/StreamWrapperInterface.php';
 require_once __DIR__ . '/src/WordPress/Streams/VanillaStreamWrapper.php';
 require_once __DIR__ . '/src/WordPress/Streams/StreamPeekerWrapper.php';
