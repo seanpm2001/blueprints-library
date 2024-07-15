@@ -1,57 +1,35 @@
 <?php
 
 use WordPress\AsyncHttp\Client;
+use WordPress\AsyncHttp\ClientEvent;
 use WordPress\AsyncHttp\Request;
 
 require __DIR__ . '/vendor/autoload.php';
 
+$requests = [
+	new Request( "https://wordpress.org/latest.zip" ),
+	new Request( "https://raw.githubusercontent.com/wpaccessibility/a11y-theme-unit-test/master/a11y-theme-unit-test-data.xml" ),
+];
+
 $client = new Client();
-$client->set_progress_callback( function ( Request $request, $downloaded, $total ) {
-	echo "$request->url – Downloaded: $downloaded / $total\n";
-} );
+$client->enqueue( $requests );
 
-$streams1 = $client->enqueue( [
-	new Request( "https://downloads.wordpress.org/plugin/gutenberg.17.7.0.zip" ),
-	new Request( "https://downloads.wordpress.org/theme/pendant.zip" ),
-] );
-// Enqueuing another request here is instant and won't start the download yet.
-//$streams2 = $client->enqueue( [
-//	new Request( "https://downloads.wordpress.org/plugin/hello-dolly.1.7.3.zip" ),
-//] );
-
-// Stream a single file, while streaming all the files
-file_put_contents( 'output-round1-0.zip', stream_get_contents( $streams1[0] ) );
-//file_put_contents( 'output-round1-1.zip', stream_get_contents( $streams1[1] ) );
-die();
-// Initiate more HTTPS requests
-$streams3 = $client->enqueue( [
-	new Request( "https://downloads.wordpress.org/plugin/akismet.4.1.12.zip" ),
-	new Request( "https://downloads.wordpress.org/plugin/hello-dolly.1.7.3.zip" ),
-	new Request( "https://downloads.wordpress.org/plugin/hello-dolly.1.7.3.zip" ),
-] );
-
-// Download the rest of the files. Foreach() seems like downloading things
-// sequentially, but we're actually streaming all the files in parallel.
-$streams = array_merge( $streams2, $streams3 );
-foreach ( $streams as $k => $stream ) {
-	file_put_contents( 'output-round2-' . $k . '.zip', stream_get_contents( $stream ) );
+while ( $client->await_next_event() ) {
+	$request = $client->get_request();
+	echo "Request " . $request->id . ": " . $client->get_event() . " ";
+	switch ( $client->get_event() ) {
+		case Client::EVENT_BODY_CHUNK_AVAILABLE:
+			echo $request->response->received_bytes . "/". $request->response->total_bytes ." bytes received";
+			file_put_contents( 'downloads/' . $request->id, $client->get_response_body_chunk(), FILE_APPEND);
+			break;
+		case Client::EVENT_REDIRECT:
+		case Client::EVENT_GOT_HEADERS:
+		case Client::EVENT_FINISHED:
+			break;
+		case Client::EVENT_FAILED:
+			echo "– ❌ Failed request to " . $request->url . " – " . $request->error;
+			break;
+	}
+	echo "\n";
 }
 
-echo "Done! :)";
-
-// ----------------------------
-//
-// Previous explorations:
-
-// Non-blocking parallel processing – the fastest method.
-//while ( $results = sockets_http_response_await_bytes( $streams, 8096 ) ) {
-//	foreach ( $results as $k => $chunk ) {
-//		file_put_contents( 'output' . $k . '.zip', $chunk, FILE_APPEND );
-//	}
-//}
-
-// Blocking sequential processing – the slowest method.
-//foreach ( $streams as $k => $stream ) {
-//	stream_set_blocking( $stream, 1 );
-//	file_put_contents( 'output' . $k . '.zip', stream_get_contents( $stream ) );
-//}
