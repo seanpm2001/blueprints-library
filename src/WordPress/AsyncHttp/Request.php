@@ -68,4 +68,13 @@ class Request {
 		return $request;
 	}
 
+	public function original_request() {
+		$request = $this;
+		while ( $request->redirected_from ) {
+			$request = $request->redirected_from;
+		}
+
+		return $request;
+	}
+
 }
