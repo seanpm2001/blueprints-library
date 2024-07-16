@@ -366,7 +366,7 @@ class Client {
 		}
 	}
 
-	private function get_active_requests( $states = null ) {
+	public function get_active_requests( $states = null ) {
 		$processed_requests = $this->get_requests( [
 			Request::STATE_WILL_ENABLE_CRYPTO,
 			Request::STATE_WILL_SEND_HEADERS,
